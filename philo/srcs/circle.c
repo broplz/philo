@@ -1,3 +1,5 @@
 #include "../includes/philo.h"
 
-void create_node()
+void create_node() {
+
+}
