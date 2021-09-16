@@ -8,29 +8,33 @@
 # include <sys/time.h>
 # include <pthread.h>
 
-typedef struct	s_args
+typedef struct		s_var
 {
-	int	sleep;
-	int	eat;
-	int	think;
-	int	philos;
-}				t_args;
+	int				philo_amount;
+	int				sleep_time;
+	int				eat_time;
+	int				think_time;
+	int				number_of_meals;
+}					t_var;
 
-typedef struct	s_philo
+typedef struct		s_philo
 {
 	int				name;
-	struct s_philo	*prev;
-	struct s_philo	*next;
 	unsigned		left_fork;
 	unsigned		right_fork;
-}				t_philo;
+}					t_philo;
 
-typedef struct	s_table
+typedef struct		s_table
 {
-	int				size;
-	t_philo			head;
-	t_args			args;
-//	pthread_mutex_t	*forks[PHT_SIZE];
-}				t_table;
+	int				forks_amount;
+	pthread_mutex_t	*forks;
+}					t_table;
+
+typedef struct		s_args
+{
+	t_philo			*philo;
+	t_table			*table;
+	t_var			*var;
+}					t_args;
 
 #endif

@@ -81,9 +81,6 @@
 		<Unit filename="/Users/hcherrie/test/philo/philo/includes/philo.h">
 			<Option target="philo"/>
 		</Unit>
-		<Unit filename="/Users/hcherrie/test/philo/philo/srcs/circle.c">
-			<Option target="philo"/>
-		</Unit>
 		<Unit filename="/Users/hcherrie/test/philo/philo/srcs/philo.c">
 			<Option target="philo"/>
 		</Unit>

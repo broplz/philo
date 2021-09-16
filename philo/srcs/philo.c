@@ -1,71 +1,96 @@
 #include "../includes/philo.h"
 
-void	init_args(t_table *table)
+int	ft_atoi(char *str)
 {
-	table->args.eat = 100;
-	table->args.sleep = 100;
-	table->args.think = 200;
-	table->args.philos = 7;
-	table->size = 0;
-}
+	int res;
 
-void	init_philo(t_philo *philo, int num)
-{
-	philo->name = num;
-}
-
-int	create_philo(t_table *table)
-{
-	while (table->size < table->args.philos)
+	res = 0;
+	while (*str && *str >= '0' && *str <= '9')
 	{
-		t_philo *philo;
-
-		philo = (t_philo *)malloc(sizeof(t_philo));
-		if (philo == NULL)
-			return (1);
-		init_philo(philo, table->size);
-		if (table->size == 0)
-		{
-			philo->next = philo;
-			philo->prev = philo;
-			table->head = *philo;
-			free(philo);
-		}
-		else
-		{
-			philo->next = &table->head;
-			philo->prev = table->head.prev;
-			table->head.prev->next = philo;
-			table->head.prev = philo;
-		}
-
-		table->size++;
+		res = res * 10 + (*str - 48);
+		++str;
 	}
-	return (0);
+	return res;
+}
+//
+//void eat(t_table *var)
+//{
+//	t_args *arg = var->var;
+//	t_philo *philo
+//}
+
+void	init_philo(t_philo *philo, int name, unsigned left, unsigned right)
+{
+	philo->name = name;
+	philo->left_fork = left;
+	philo->right_fork = right;
 }
 
-int	main(int ac, char **av)
+void init_table(t_table *table)
 {
-	t_table	*table;
+	size_t i;
 
-	table = (t_table *) malloc(sizeof(t_table));
-	if (table == NULL)
-		return (1);
-	table->size = 5;
-	init_args(table);
-	create_philo(table);
-
-
-	t_philo *curr = &table->head;
-	// DEBUG INFO
-	for (int i = 0; i < table->size; ++i) {
-		printf("%d - philo name\n", curr->name);
-		curr = curr->next;
+	i = 0;
+	while (i < table->forks_amount)
+	{
+		pthread_mutex_init(&table->forks[i], NULL);
+		i++;
 	}
+}
 
-//	printf("%d - args sleep\n", table->args.sleep);
-//	printf("%d - args think\n", table->args.think);
-//	printf("%d - args eat\n", table->args.eat);
-//	printf("%lu - allocated memory to table\n", sizeof(table));
-//	printf("%d - table size\n", table->size);
+void eat(void *args)
+{
+	t_args *arg = (t_args *)args;
+	t_philo *philo = arg->philo;
+	t_table *table = arg->table;
+
+	printf("%d started to eat\n", philo->name);
+
+	pthread_mutex_lock(&table->forks[philo->left_fork]);
+	pthread_mutex_lock(&table->forks[philo->right_fork]);
+
+	printf("%d is eating\n", philo->name);
+
+	pthread_mutex_unlock(&table->forks[philo->left_fork]);
+	pthread_mutex_unlock(&table->forks[philo->right_fork]);
+
+	printf("%d finished to eat\n", philo->name);
+}
+int	main(int ass, char **dicks)
+{
+	pthread_t	threads[ft_atoi(dicks[1])];
+	t_philo		philo[ft_atoi(dicks[1])];
+	t_table		table;
+	size_t		i;
+
+//	table = (t_table *)malloc(sizeof(t_table));
+	table.forks_amount = ft_atoi(dicks[1]);
+	init_table(&table);
+//	t_args *args;
+//
+//	args = (t_args *)malloc(sizeof(t_args));
+//	if (args == NULL)
+//		return (1);
+//	args->table->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * ft_atoi(dicks[1]));
+//	if (args->table->forks == NULL)
+//		return (1);
+//	if (ass < 5 || ass > 6)
+//		return (2);
+//	args->var->philo_amount = ft_atoi(dicks[1]);
+//	args->var->think_time = ft_atoi(dicks[2]);
+//	args->var->eat_time = ft_atoi(dicks[3]);
+//	args->var->sleep_time = ft_atoi(dicks[4]);
+//	if (ass == 6)
+//		args->var->number_of_meals = ft_atoi(dicks[5]);
+//	init_table(args);
+
+
+	//DEBUG
+//	printf("%d - var->var->philo_amount\n", args->var->philo_amount);
+//	printf("%d - var->var->think_time\n", args->var->think_time);
+//	printf("%d - var->var->eat_time\n", args->var->eat_time);
+//	printf("%d - var->var->sleep_time\n", args->var->sleep_time);
+//	printf("%d - var->var->number_of_meals\n", args->var->number_of_meals);
+	printf("%ld - allocated memory size\n", sizeof(t_table));
+	return (0);
 }

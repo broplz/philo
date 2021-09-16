@@ -1,0 +1,35 @@
+#ifndef PHILO_H
+# define PHILO_H
+
+# include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include/unistd.h"
+# include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include/stdlib.h"
+# include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include/memory.h"
+# include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include/stdio.h"
+# include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include/sys/time.h"
+# include "../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include/pthread.h"
+
+typedef struct	s_args
+{
+	int	sleep;
+	int	eat;
+	int	think;
+	int	philos;
+}				t_args;
+
+typedef struct	s_philo
+{
+	int				name;
+	struct s_philo	*prev;
+	struct s_philo	*next;
+	unsigned		fork;
+}				t_philo;
+
+typedef struct	s_table
+{
+	int				size;
+	t_philo			head;
+	t_args			args;
+//	pthread_mutex_t	*forks[PHT_SIZE];
+}				t_table;
+
+#endif

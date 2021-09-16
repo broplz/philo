@@ -1,5 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/philo.dir/srcs/circle.c.o"
   "CMakeFiles/philo.dir/srcs/philo.c.o"
   "philo"
   "philo.pdb"
