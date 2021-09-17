@@ -8,9 +8,13 @@
 # include <sys/time.h>
 # include <pthread.h>
 
+#define PMT pthread_mutex_t
+#define PML pthread_mutex_lock
+#define PMU pthread_mutex_unlock
+
 typedef struct		s_var
 {
-	int				philo_amount;
+	int				p_amount;
 	int				sleep_time;
 	int				eat_time;
 	int				think_time;
@@ -26,7 +30,6 @@ typedef struct		s_philo
 
 typedef struct		s_table
 {
-	int				forks_amount;
 	pthread_mutex_t	*forks;
 }					t_table;
 
@@ -34,7 +37,7 @@ typedef struct		s_args
 {
 	t_philo			*philo;
 	t_table			*table;
-	t_var			*var;
+	t_var			var;
 }					t_args;
 
 #endif
