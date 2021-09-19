@@ -1,6 +1,6 @@
 #include "../includes/philo.h"
 
-int	ft_atoi(char *str)
+int	ft_atoi(char *str) // TODO защитить атой
 {
 	int res;
 
@@ -20,74 +20,91 @@ void	init_philo(t_philo *philo, int name, unsigned left, unsigned right)
 	philo->right_fork = right;
 }
 
-void init_table(t_args *args)
+void* eat(void *args)
 {
-	size_t i;
-
-	i = 0;
-	while (i < args->var.p_amount)
+	t_philo *philo = (t_philo *)args;
+	while (philo->var->dead == 0)
 	{
-		pthread_mutex_init(&args->table->forks[i], NULL);
-		i++;
+		PML(&philo->var->forks[philo->left_fork]);
+		PML(&philo->var->print);
+		printf("timestamp_in_ms %d has taken a left fork", philo->name);
+		PMU(&philo->var->print);
+
+		PML(&philo->var->forks[philo->right_fork]);
+		PML(&philo->var->print);
+		printf("timestamp_in_ms %d has taken a right fork", philo->name);
+		printf("%d is eating\n", philo->name + 1);
+		PMU(&philo->var->print);
+		usleep(philo->var->eat_time * 1000);
+
+		PMU(&philo->var->forks[philo->left_fork]);
+		PMU(&philo->var->forks[philo->right_fork]);
+		PML(&philo->var->print);
+		printf("timestamp_in_ms %d is sleeping", philo->name);
+		PMU(&philo->var->print);
+		usleep(philo->var->sleep_time * 1000);
+
+		PML(&philo->var->print);
+		printf("timestamp_in_ms %d is thinking", philo->name);
+		PMU(&philo->var->print);
 	}
 }
 
-void eat(void *args)
+ULL	current_time()
 {
-	t_args *arg = (t_args *)args;
-	t_philo *philo = arg->philo;
-	t_table *table = arg->table;
 
-	printf("%d started to eat\n", philo->name);
-
-	PML(&table->forks[philo->left_fork]);
-	PML(&table->forks[philo->right_fork]);
-
-	printf("%d is eating\n", philo->name);
-
-	PMU(&table->forks[philo->left_fork]);
-	PMU(&table->forks[philo->right_fork]);
-
-	printf("%d finished to eat\n", philo->name);
 }
 
-void	malloc_all(t_args *args)
+void init_vars(t_var *var, char **av)
 {
-	args->table = (t_table *)malloc(sizeof(t_table));
-	args->table->forks = (PMT *)malloc(sizeof(PMT) * args->var.p_amount);
-	args->philo = (t_philo *)malloc(sizeof(t_philo) * args->var.p_amount);
+	var->dead = 0;
+	var->full = 0;
+	var->p_amount = ft_atoi(av[1]);
+	var->think_time = ft_atoi(av[2]);
+	var->eat_time = ft_atoi(av[3]);
+	var->sleep_time = ft_atoi(av[4]);
+	if (var->p_amount == 6)
+		var->number_of_meals = ft_atoi(av[5]);
+	var->forks = (PMT *)malloc(sizeof(PMT) * var->p_amount);
+	var->philo = (t_philo *)malloc(sizeof(t_philo));
+	int i = 0;
+	while (i < var->p_amount)
+	{
+		pthread_mutex_init(&var->forks[i], NULL);
+		i++;
+	}
+	pthread_mutex_init(&var->print, NULL);
 }
 
-void init_vars(t_args *args, char **av)
+void	create_tread(t_var *var)
 {
-	args->var.p_amount = ft_atoi(av[1]);
-	args->var.think_time = ft_atoi(av[2]);
-	args->var.eat_time = ft_atoi(av[3]);
-	args->var.sleep_time = ft_atoi(av[4]);
-	args->var.number_of_meals = ft_atoi(av[5]);
+	int i;
+
+	i = 0;
+	while (i < var->p_amount)
+	{
+		pthread_create(&var->philo->thread, NULL, eat, &var->philo[i]);
+		i++;
+		usleep(50);
+	}
+
 }
 
 int	main(int ac, char **av)
 {
-	t_args		args;
+	t_philo		*philo;
+	t_var		var;
 	int			i;
 
+	init_vars(&var, av);
 	i = 0;
-	init_vars(&args, av);
-	malloc_all(&args);
-	init_table(&args);
-	while (i < args.var.p_amount - 1)
+	while (i < var.p_amount - 1)
 	{
-		init_philo(&args.philo[i], i, i, i + 1);
+		init_philo(&var.philo[i], i, i, i + 1);
 		i++;
 	}
-	init_philo(&args.philo[i], i, i, 0);
+	init_philo(&var.philo[i], i, i, 0);
+	create_tread(&var);
 
-	i = 0;
-	while (i < args.var.p_amount)
-	{
-		printf("%d - id of philo, %d - left, %d - right\n", args.philo[i].name, args.philo[i].left_fork, args.philo[i].right_fork);
-		i++;
-	}
 	return (0);
 }
