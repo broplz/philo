@@ -14,6 +14,7 @@
 #define PMU pthread_mutex_unlock
 #define PHILO_AMOUNT ft_atoi(av[1])
 #define ULL unsigned long long
+#define PMI	pthread_mutex_init
 
 typedef struct s_philo	t_philo;
 
@@ -26,8 +27,10 @@ typedef struct		s_var
 	int				number_of_meals;
 	int				dead;
 	int				full;
+	ULL				start_time;
 	PMT				*forks;
 	PMT				print;
+	PT				monitoring;
 	t_philo 		*philo;
 }					t_var;
 
@@ -35,22 +38,11 @@ typedef struct		s_philo
 {
 	PT				thread;
 	int				name;
+	int				eat_counter;
 	unsigned		left_fork;
 	unsigned		right_fork;
 	ULL				last_eat;
 	t_var			*var;
 }					t_philo;
-
-//typedef struct		s_table
-//{
-//	PMT				*forks;
-//}					t_table;
-
-//typedef struct		s_args
-//{
-//	t_var			var;
-//	t_philo			*philo;
-//	t_table			*table;
-//}					t_args;
 
 #endif
