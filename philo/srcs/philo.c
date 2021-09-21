@@ -21,7 +21,7 @@ void	init_philo(t_philo *philo, int name, unsigned left, unsigned right)
 	philo->eat_counter = 0;
 }
 
-ULL	current_time()
+LLU	current_time()
 {
 	struct timeval tv1;
 
@@ -37,7 +37,6 @@ void* eat(void *args)
 	philo = (t_philo *)args;
 	while (philo->var->dead == 0)
 	{
-//		printf("\n%d - Philosopher here, %d - left, %d right\n", philo->name, philo->left_fork, philo->right_fork);
 		PML(&philo->var->forks[philo->left_fork]);
 
 		PML(&philo->var->print);
@@ -71,12 +70,12 @@ void* eat(void *args)
 		PMU(&philo->var->print);
 	}
 }
-//
-//void	ft_usleep(ULL time, int flag)
-//{
-//	while ()
-//		usleep(1);
-//}
+
+void	ft_usleep(LLU time, int flag)
+{
+	while (current_time() - time != 0 && flag != 1)
+		usleep(1);
+}
 
 void init_vars(t_var *var, char **av)
 {
