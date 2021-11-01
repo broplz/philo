@@ -160,8 +160,8 @@ void    free_all(t_var *var)
 {
     free(var->philo);
     int i = 0;
-//    while (i < var->p_amount)
-//        pthread_mutex_destroy(&var->forks[i++]);
+    while (i < var->p_amount)
+        pthread_mutex_destroy(&var->forks[i++]);
     free(var->forks);
 }
 
