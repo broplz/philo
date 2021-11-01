@@ -21,7 +21,7 @@ void	init_philo(t_philo *philo, int name, unsigned left, unsigned right) //, t_v
 	philo->eat_counter = 0;
 }
 
-LLU	current_time()
+long long unsigned	current_time()
 {
 	struct timeval tv1;
 
@@ -37,44 +37,57 @@ void* eat(void *args)
     philo->last_eat = current_time();
 	while (philo->var->dead == 0)
 	{
-		PML(&philo->var->forks[philo->left_fork]);
+		pthread_mutex_lock(&philo->var->forks[philo->left_fork]);
 
-		PML(&philo->var->print);
-		printf("%llu %d has taken a left fork\n", current_time() - philo->var->start_time, philo->name);
-		PMU(&philo->var->print);
+		pthread_mutex_lock(&philo->var->print);
+        if (philo->var->dead == 0)
+		    printf("%llu %d has taken a left fork\n", current_time() - philo->var->start_time, philo->name);
 
-		PML(&philo->var->forks[philo->right_fork]);
+		pthread_mutex_unlock(&philo->var->print);
+        if (philo->var->p_amount == 1)
+        {
+            pthread_mutex_unlock(philo->var->forks);
+            break;
+        }
 
-		PML(&philo->var->print);
-		printf("%llu %d has taken a right fork\n", current_time() - philo->var->start_time, philo->name);
-		printf("%llu %d is eating\n", current_time() - philo->var->start_time, philo->name);
-		PMU(&philo->var->print);
+		pthread_mutex_lock(&philo->var->forks[philo->right_fork]);
+
+		pthread_mutex_lock(&philo->var->print);
+        if (philo->var->dead == 0)
+        {
+            printf("%llu %d has taken a right fork\n", current_time() - philo->var->start_time, philo->name);
+            printf("%llu %d is eating\n", current_time() - philo->var->start_time, philo->name);
+        }
+		pthread_mutex_unlock(&philo->var->print);
 		philo->eat_counter++;
 		if (philo->eat_counter == philo->var->number_of_meals)
 			philo->var->full++;
 		philo->last_eat = current_time();
+        if (philo->var->dead == 0)
+            ft_usleep(philo->var->eat_time);
 
-		ft_usleep(philo->var->eat_time);
-	// UNLOCK
-		PMU(&philo->var->forks[philo->left_fork]);
-		PMU(&philo->var->forks[philo->right_fork]);
-	// UNLOCK END
-		PML(&philo->var->print);
-		printf("%llu %d is sleeping\n", current_time() - philo->var->start_time, philo->name);
-		PMU(&philo->var->print);
+		pthread_mutex_unlock(&philo->var->forks[philo->left_fork]);
+		pthread_mutex_unlock(&philo->var->forks[philo->right_fork]);
 
-		ft_usleep(philo->var->sleep_time);
+		pthread_mutex_lock(&philo->var->print);
+        if (philo->var->dead == 0)
+            printf("%llu %d is sleeping\n", current_time() - philo->var->start_time, philo->name);
+		pthread_mutex_unlock(&philo->var->print);
 
-		PML(&philo->var->print);
-		printf("%llu %d is thinking\n", current_time() - philo->var->start_time, philo->name);
-		PMU(&philo->var->print);
+        if (philo->var->dead == 0)
+            ft_usleep(philo->var->sleep_time);
+
+		pthread_mutex_lock(&philo->var->print);
+        if (philo->var->dead == 0)
+            printf("%llu %d is thinking\n", current_time() - philo->var->start_time, philo->name);
+		pthread_mutex_unlock(&philo->var->print);
 	}
     return (NULL);
 }
 
-void	ft_usleep(LLU time)
+void	ft_usleep(long long unsigned time)
 {
-	LLU temp;
+	long long unsigned temp;
 
     temp = current_time();
     while (current_time() - temp < time)
@@ -93,15 +106,15 @@ void init_vars(t_var *var, char **av)
 		var->number_of_meals = ft_atoi(av[5]);
 	else
 		var->number_of_meals = -1;
-	var->forks = (PMT *)malloc(sizeof(PMT) * var->p_amount);
+	var->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * var->p_amount);
 	var->philo = (t_philo *)malloc(sizeof(t_philo) * var->p_amount);
 	int i = 0;
 	while (i < var->p_amount)
 	{
-		PMI(&var->forks[i], NULL);
+		pthread_mutex_init(&var->forks[i], NULL);
 		i++;
 	}
-	PMI(&var->print, NULL);
+	pthread_mutex_init(&var->print, NULL);
 }
 
 void	*check_dead(void *args)
@@ -114,8 +127,10 @@ void	*check_dead(void *args)
 	{
 		if (current_time() - var->philo[i].last_eat > var->think_time)
 		{
-			PML(&var->print);
+			pthread_mutex_lock(&var->print);
 			printf("%llu %d died\n", current_time() - var->start_time, var->philo->name);
+            var->dead = 1;
+            pthread_mutex_unlock(&var->print);
 			break;
 		}
 		i++;
@@ -144,6 +159,9 @@ void	create_tread(t_var *var)
 void    free_all(t_var *var)
 {
     free(var->philo);
+    int i = 0;
+//    while (i < var->p_amount)
+//        pthread_mutex_destroy(&var->forks[i++]);
     free(var->forks);
 }
 
@@ -170,7 +188,7 @@ int	main(int ac, char **av)
 
 	while (i < var.p_amount)
 	{
-		pthread_detach(var.philo[i].thread);
+//		pthread_detach(var.philo[i].thread);
         pthread_join(var.philo[i].thread, NULL);
 		i++;
 	}
