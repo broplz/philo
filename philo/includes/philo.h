@@ -6,6 +6,7 @@
 # include <memory.h>
 # include <stdio.h>
 # include <sys/time.h>
+//# include <sys/types.h>
 # include <pthread.h>
 
 #define PT pthread_t
@@ -30,6 +31,7 @@ typedef struct		s_var
 	PMT				*forks;
 	PMT				print;
 	PT				monitoring;
+    int             ac;
 	t_philo 		*philo;
 }					t_var;
 
@@ -43,5 +45,7 @@ typedef struct		s_philo
 	LLU				last_eat;
 	t_var			*var;
 }					t_philo;
+
+void	ft_usleep(LLU time);
 
 #endif

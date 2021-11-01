@@ -13,7 +13,7 @@ int	ft_atoi(char *str) // TODO защитить атой
 	return res;
 }
 
-void	init_philo(t_philo *philo, int name, unsigned left, unsigned right)
+void	init_philo(t_philo *philo, int name, unsigned left, unsigned right) //, t_var *var)
 {
 	philo->name = name + 1;
 	philo->left_fork = left;
@@ -29,12 +29,12 @@ LLU	current_time()
 	return (tv1.tv_sec * 1000 + tv1.tv_usec / 1000);
 }
 
-
 void* eat(void *args)
 {
 	t_philo *philo;
 
 	philo = (t_philo *)args;
+    philo->last_eat = current_time();
 	while (philo->var->dead == 0)
 	{
 		PML(&philo->var->forks[philo->left_fork]);
@@ -54,7 +54,7 @@ void* eat(void *args)
 			philo->var->full++;
 		philo->last_eat = current_time();
 
-		usleep(philo->var->eat_time * 1000);
+		ft_usleep(philo->var->eat_time);
 	// UNLOCK
 		PMU(&philo->var->forks[philo->left_fork]);
 		PMU(&philo->var->forks[philo->right_fork]);
@@ -63,18 +63,22 @@ void* eat(void *args)
 		printf("%llu %d is sleeping\n", current_time() - philo->var->start_time, philo->name);
 		PMU(&philo->var->print);
 
-		usleep(philo->var->sleep_time * 1000);
+		ft_usleep(philo->var->sleep_time);
 
 		PML(&philo->var->print);
 		printf("%llu %d is thinking\n", current_time() - philo->var->start_time, philo->name);
 		PMU(&philo->var->print);
 	}
+    return (NULL);
 }
 
-void	ft_usleep(LLU time, int flag)
+void	ft_usleep(LLU time)
 {
-	while (current_time() - time != 0 && flag != 1)
-		usleep(1);
+	LLU temp;
+
+    temp = current_time();
+    while (current_time() - temp < time)
+        usleep(100);
 }
 
 void init_vars(t_var *var, char **av)
@@ -85,12 +89,12 @@ void init_vars(t_var *var, char **av)
 	var->think_time = ft_atoi(av[2]);
 	var->eat_time = ft_atoi(av[3]);
 	var->sleep_time = ft_atoi(av[4]);
-	if (var->p_amount == 6)
+	if (var->ac == 6)
 		var->number_of_meals = ft_atoi(av[5]);
 	else
 		var->number_of_meals = -1;
 	var->forks = (PMT *)malloc(sizeof(PMT) * var->p_amount);
-	var->philo = (t_philo *)malloc(sizeof(t_philo));
+	var->philo = (t_philo *)malloc(sizeof(t_philo) * var->p_amount);
 	int i = 0;
 	while (i < var->p_amount)
 	{
@@ -108,39 +112,39 @@ void	*check_dead(void *args)
 	i = 0;
 	while (1)
 	{
-		if (current_time() - var->philo[i].last_eat > var->think_time || var->full == var->p_amount)
+		if (current_time() - var->philo[i].last_eat > var->think_time)
 		{
 			PML(&var->print);
-			printf("%llu %d died\n", current_time() - var->philo->last_eat, var->philo->name);
+			printf("%llu %d died\n", current_time() - var->start_time, var->philo->name);
 			break;
 		}
 		i++;
 		if (i < var->p_amount)
-		{
 			i = 0;
-		}
+        if (var->full == var->p_amount)
+            break;
 	}
+    return (NULL);
 }
 void	create_tread(t_var *var)
 {
 	int i;
 
-	i = 0;
-	var->start_time = current_time();
-
-	while (i < var->p_amount)
+    i = 0;
+    var->start_time = current_time();
+    while (i < var->p_amount)
 	{
-		var->philo[i].last_eat = var->start_time;
-		i++;
-	}
-	i = 0;
-	while (i < var->p_amount)
-	{
-		pthread_create(&var->philo[i].thread, NULL, eat, &var->philo[i]);
+		pthread_create(&var->philo[i].thread, NULL, &eat, &var->philo[i]);
 		i++;
 		usleep(10);
 	}
-	pthread_create(&var->monitoring, NULL,  check_dead, var);
+	pthread_create(&var->monitoring, NULL, check_dead, var);
+}
+
+void    free_all(t_var *var)
+{
+    free(var->philo);
+    free(var->forks);
 }
 
 int	main(int ac, char **av)
@@ -148,33 +152,29 @@ int	main(int ac, char **av)
 	t_var		var;
 	int			i;
 
-	init_vars(&var, av);
+    var.ac = ac;
+    init_vars(&var, av);
 	i = 0;
 	while (i < var.p_amount)
 	{
-		init_philo(&var.philo[i], i, i, i + 1);
+		init_philo(&var.philo[i], i, i, i + 1); //, &var);
 		var.philo[i].var = &var;
 		i++;
 	}
 	i--;
-	init_philo(&var.philo[i], i, i, 0);
+	init_philo(&var.philo[i], i, i, 0); //, &var);
 	var.philo[i].var = &var;
 	create_tread(&var);
 
 	i = 0;
+
 	while (i < var.p_amount)
 	{
-		pthread_join(&var.philo->thread[i], NULL);
+		pthread_detach(var.philo[i].thread);
+        pthread_join(var.philo[i].thread, NULL);
 		i++;
 	}
-	pthread_join(var.monitoring, NULL);
-
-	//DEBUG
-//	int j = 0;
-//	while (j < var.p_amount)
-//	{
-//		printf("%d - name, %d - left, %d right\n", var.philo[j].name, var.philo[j].left_fork, var.philo[j].right_fork);
-//		j++;
-//	}
+	pthread_join(var.monitoring,NULL);
+    free_all(&var);
 	return (0);
 }

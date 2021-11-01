@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/Users/hcherrie/test/philo/philo/includes/philo.h
+/home/broplz/school21/philo/philo/includes/philo.h
 unistd.h
 -
 stdlib.h
@@ -20,7 +20,7 @@ sys/time.h
 pthread.h
 -
 
-/Users/hcherrie/test/philo/philo/srcs/philo.c
+/home/broplz/school21/philo/philo/srcs/philo.c
 ../includes/philo.h
-/Users/hcherrie/test/philo/philo/includes/philo.h
+/home/broplz/school21/philo/philo/includes/philo.h
 
